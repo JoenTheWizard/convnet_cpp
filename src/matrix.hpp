@@ -41,6 +41,9 @@ public:
 
     //Subtract matricies, returns matrix
     Matrix subtract(const Matrix& other) const;
+
+    //Transpose matrix, returns matrix
+    Matrix transpose() const;
 };
 
 #endif

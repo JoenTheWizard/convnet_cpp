@@ -64,3 +64,15 @@ Matrix Matrix::subtract(const Matrix& other) const {
 
     return result;
 }
+
+Matrix Matrix::transpose() const {
+    Matrix result(columns, rows);
+    
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < columns; j++) {
+            result(j, i) = (*this)(i, j);
+        }
+    }
+
+    return result;
+}
