@@ -25,6 +25,10 @@ public:
     double&       operator()(int i, int j)       { return data[index(i, j)]; }
     const double& operator()(int i, int j) const { return data[index(i, j)]; }
 
+    //Mathematical matrix operations (* for dot product, - for subtraction )
+    Matrix operator-(const Matrix& other) const { return subtract(other); }
+    Matrix operator*(const Matrix& other) const { return dot_product(other); }
+
     //Get methods
     int get_rows()    const;
     int get_columns() const;
