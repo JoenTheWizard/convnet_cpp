@@ -76,3 +76,17 @@ Matrix Matrix::transpose() const {
 
     return result;
 }
+
+Matrix Matrix::get_row_matrix(int row_index) const {
+    if (row_index < 0 || row_index >= rows) {
+        throw std::out_of_range("Row index is out of range");
+    }
+
+    Matrix row(1, columns);
+
+    for (int j = 0; j < columns; j++) {
+        row(0, j) = (*this)(row_index, j);
+    }
+
+    return row;
+}

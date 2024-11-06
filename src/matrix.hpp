@@ -40,6 +40,9 @@ public:
     //Print the formatted matrix
     void print_matrix() const;
 
+    //Get a row from index, returns matrix
+    Matrix get_row_matrix(int row_index) const;
+
     //Dot product, returns matrix
     Matrix dot_product(const Matrix& other) const;
 
