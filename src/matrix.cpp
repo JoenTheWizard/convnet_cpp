@@ -79,7 +79,7 @@ Matrix Matrix::transpose() const {
 
 Matrix Matrix::get_row_matrix(int row_index) const {
     if (row_index < 0 || row_index >= rows) {
-        throw std::out_of_range("Row index is out of range");
+        throw std::out_of_range("[-] ERROR Matrix.cpp: Row index is out of range");
     }
 
     Matrix row(1, columns);
@@ -89,4 +89,23 @@ Matrix Matrix::get_row_matrix(int row_index) const {
     }
 
     return row;
+}
+
+Matrix Matrix::get_submatrix(int start_row, int end_row) const {
+    if (start_row < 0 || end_row > rows || start_row >= end_row) {
+        throw std::out_of_range("[-] ERROR Matrix.cpp: Invalid row range for submatrix");
+    }
+
+    //Create new matrix with new number of rows
+    //Number of columns are kept
+    int num_rows = end_row - start_row;
+    Matrix submatrix(num_rows, columns);
+
+    for (int i = start_row; i < end_row; ++i) {
+        for (int j = 0; j < columns; ++j) {
+            submatrix(i - start_row, j) = (*this)(i, j);
+        }
+    }
+
+    return submatrix;
 }

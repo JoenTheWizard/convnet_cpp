@@ -43,6 +43,9 @@ public:
     //Get a row from index, returns matrix
     Matrix get_row_matrix(int row_index) const;
 
+    //Get a submatrix from start_row to end_row, returns matrix
+    Matrix get_submatrix(int start_row, int end_row) const;
+
     //Dot product, returns matrix
     Matrix dot_product(const Matrix& other) const;
 
