@@ -23,6 +23,24 @@ public:
         }
     }
 
+    //Call this method with batched sized inputs
+    void train(const Matrix& inputs, const Matrix& targets, double learning_rate, int epochs, int batch_size) {
+        int num_samples = inputs.get_rows();
+
+        for (int e = 0; e < epochs; e++) {
+            for (int start = 0; start < num_samples; start += batch_size) {
+                //Determine where the batch will end
+                int end = std::min(start + batch_size, num_samples);
+
+                Matrix input_batch  = inputs.get_submatrix(start, end);
+                Matrix target_batch = targets.get_submatrix(start, end);
+
+                forward(input_batch);
+                backpropagate(target_batch, learning_rate);
+            }
+        }
+    }
+
     const Matrix predict(const Matrix& input) {
         forward(input);
         return layers.back().get_outputs();
