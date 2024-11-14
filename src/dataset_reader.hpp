@@ -24,9 +24,13 @@ private:
     Matrix features; //X (inputs)
     Matrix labels;   //y (outputs)
     std::vector<std::string> header;
+    //Specified number of output columns, will be set in the constructor
+    int num_outputs;
 
 public:
-    DatasetReader() : features(0, 0), labels(0, 0) {}
+    DatasetReader(int num_outputs = 1) : features(0, 0), labels(0, 0) {
+        this->num_outputs = num_outputs;
+    }
 
     //Read CSV file (default delimiter is comma and ignore first row 'header' by default)
     //This will read the data as double types
@@ -62,14 +66,16 @@ public:
         int rows = data.size();
         int cols = data[0].size();
 
-        features = Matrix(rows, cols - 1);
-        labels   = Matrix(rows, 1);
+        features = Matrix(rows, cols - num_outputs);
+        labels   = Matrix(rows, num_outputs);
 
         for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
+            for (int j = 0; j < cols - num_outputs; j++) {
                 features(i, j) = data[i][j];
             }
-            labels(i, 0) = data[i][cols - 1];
+            for (int j = 0; j < num_outputs; j++) {
+                labels(i, j) = data[i][cols - num_outputs + j];
+            }
         }
     }
 
@@ -88,22 +94,28 @@ public:
 
         //Split the data
         Matrix X_train(train_samples, features.get_columns());
-        Matrix y_train(train_samples, 1);
+        Matrix y_train(train_samples, num_outputs);
         Matrix X_test(test_samples, features.get_columns());
-        Matrix y_test(test_samples, 1);
+        Matrix y_test(test_samples, num_outputs);
 
+        //Fill in the train set matricies 
         for (int i = 0; i < train_samples; ++i) {
             for (int j = 0; j < features.get_columns(); ++j) {
                 X_train(i, j) = features(indices[i], j);
             }
-            y_train(i, 0) = labels(indices[i], 0);
+            for (int j = 0; j < num_outputs; ++j) {
+                y_train(i, j) = labels(indices[i], j);
+            }
         }
 
+        //Fill in the test set matricies 
         for (int i = 0; i < test_samples; ++i) {
             for (int j = 0; j < features.get_columns(); ++j) {
                 X_test(i, j) = features(indices[train_samples + i], j);
             }
-            y_test(i, 0) = labels(indices[train_samples + i], 0);
+            for (int j = 0; j < num_outputs; ++j) {
+                y_test(i, j) = labels(indices[train_samples + i], j);
+            }
         }
 
         //Return train and test sets
