@@ -82,6 +82,60 @@ public:
         }
     }
 
+    //Read CSV file for classification. Will map outputs accordingly to the label matrix
+    //Ensure that the label_map input is in the same orientation for the output model
+    void read_csv_classification(const std::string& filename, std::vector<std::string> label_map, bool has_header = true, char delimiter = ',') {
+        std::ifstream file(filename);
+        if (!file.is_open()) {
+            throw std::runtime_error("[-] ERROR Dataset_reader.cpp: Unable to open file: " + filename);
+        }
+
+        std::string line;
+        std::vector<std::vector<std::string>> data;
+
+        //Read header if available
+        if (has_header && std::getline(file, line)) {
+            std::istringstream iss(line);
+            std::string token;
+            while (std::getline(iss, token, delimiter)) {
+                header.push_back(token);
+            }
+        }
+
+        //Read data
+        while (std::getline(file, line)) {
+            std::istringstream iss(line);
+            std::string token;
+            std::vector<std::string> row;
+            while (std::getline(iss, token, delimiter)) {
+                row.push_back(token);
+            }
+            data.push_back(row);
+        }
+
+        int rows = data.size();
+        int cols = data[0].size();
+
+        size_t label_size = label_map.size();
+
+        //Set num_outputs to the number of classes
+        this->num_outputs = label_size;
+        
+        features = Matrix(rows, cols - 1);
+        labels   = Matrix(rows, label_size);
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols - 1; j++) {
+                features(i, j) = std::stod(data[i][j]);
+            }
+            for (int j = 0; j < label_size; j++) {
+                if (label_map[j] == data[i][cols - 1]) {
+                    labels(i, j) = 1;
+                }
+            }
+        }
+    }
+
     //Split data to train-test (default 80-20)
     //Default seed parameter is set randomly but can be set manually
     SplitData train_test_split(double test_size = 0.2, unsigned seed = std::random_device{}()) {
