@@ -37,6 +37,7 @@ public:
 
     //Read CSV file (default delimiter is comma and ignore first row 'header' by default)
     //This will read the data as double types
+    //NOTE: Might need to improve this function by removing use of 'data' vector vector double
     void read_csv(const std::string& filename, bool has_header = true, char delimiter = ',') {
         std::ifstream file(filename);
         if (!file.is_open()) {
@@ -84,6 +85,7 @@ public:
 
     //Read CSV file for classification. Will map outputs accordingly to the label matrix
     //Ensure that the label_map input is in the same orientation for the output model
+    //NOTE: Might need to improve this function by removing use of 'data' vector vector string
     void read_csv_classification(const std::string& filename, std::vector<std::string> label_map, bool has_header = true, char delimiter = ',') {
         std::ifstream file(filename);
         if (!file.is_open()) {
