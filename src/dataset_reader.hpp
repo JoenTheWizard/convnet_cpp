@@ -1,9 +1,12 @@
 #ifndef DATASET_READER_H
 #define DATASET_READER_H
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 #include "matrix.hpp"
 #include <string>
 #include <fstream>
+#include <filesystem>
 #include <sstream>
 #include <vector>
 #include <random>
@@ -120,6 +123,44 @@ public:
 
         //Return train and test sets
         return {X_train, X_test, y_train, y_test};
+    }
+
+    //Reads images from a folder structure where subfolders represent different classifications. 
+    //This function will read the images and produce a CSV file with pixel values as features and subfolder names as labels
+    void generate_image_dataset_csv(const std::string& folder_path, const std::string& output_csv) {
+        //Write to data file
+        std::ofstream data_file;
+        data_file.open(output_csv);
+
+        for (const auto& entry : std::filesystem::directory_iterator(folder_path)) {
+            if (entry.is_directory()) {
+                std::string label = entry.path().filename().string();
+                for (const auto& img : std::filesystem::directory_iterator(entry.path())) {
+                    if (img.is_regular_file()) {
+
+                        int width, height, channels;
+                        unsigned char* img_data = stbi_load(img.path().string().c_str(), &width, &height, &channels, 0);
+
+                        if (img_data) {
+                            //Start writing the classifications to the CSV file
+                            // data_file << "'" << label << "'"<< std::endl;
+                            for (int i = 0; i < width * height * channels; i++) {
+                                //Write the value
+                                data_file << static_cast<double>(img_data[i]) / 255 << ",";
+                                // double t = static_cast<double>(img_data[i]) / 255;
+                                // int val = t > 0.5 ? 1 : 0;
+                                // data_file << val;
+                                // data_file << (((i+1) % width == 0) ? "\n" : " ");
+                            }
+                            data_file << label << "\n";
+                            stbi_image_free(img_data);
+                        }
+
+                    }
+                }
+            }
+        }
+
     }
 
     //Get methods
