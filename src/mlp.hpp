@@ -46,6 +46,69 @@ public:
         return layers.back().get_outputs();
     }
 
+    //Might refactor for better performance maybe?
+    void save_model_binary(const std::string& filename) const {
+        std::ofstream file(filename, std::ios::binary);
+        if (!file.is_open()) {
+            throw std::runtime_error("[-] ERROR: Unable to open file '"+ filename + "' to save model");
+        }
+
+        //Write number of layers (int format)
+        int num_layers = layers.size();
+        file.write(reinterpret_cast<const char*>(&num_layers), sizeof(int));
+        
+        for (const Layer& layer : layers) {
+            const Matrix& weights = layer.get_weights();
+            int rows = weights.get_rows(), cols = weights.get_columns();
+
+            //Write number of rows and columns (int format)
+            file.write(reinterpret_cast<const char*>(&rows), sizeof(int));
+            file.write(reinterpret_cast<const char*>(&cols), sizeof(int));
+
+            //Write the weights (double format)
+            for (int i = 0; i < rows; ++i) {
+                for (int j = 0; j < cols; ++j) {
+                    double weight = weights(i, j);
+                    file.write(reinterpret_cast<const char*>(&weight), sizeof(double));
+                }
+            }
+        }
+
+        file.close();
+    }
+    
+    //Might refactor for better performance maybe?
+    void load_model_binary(const std::string& filename) {
+        std::ifstream file(filename, std::ios::binary);
+        if (!file.is_open()) {
+            throw std::runtime_error("[-] ERROR: Unable to open file '"+ filename + "' to load model");
+        }
+
+        int num_layers;
+        file.read(reinterpret_cast<char*>(&num_layers), sizeof(int));
+
+        layers.clear();
+        for (int l = 0; l < num_layers; ++l) {
+            int rows, cols;
+            file.read(reinterpret_cast<char*>(&rows), sizeof(int));
+            file.read(reinterpret_cast<char*>(&cols), sizeof(int));
+            
+            Matrix weights(rows, cols);
+            for (int i = 0; i < rows; ++i) {
+                for (int j = 0; j < cols; ++j) {
+                    double weight;
+                    file.read(reinterpret_cast<char*>(&weight), sizeof(double));
+                    weights(i, j) = weight;
+                }
+            }
+            
+            layers.emplace_back(rows, cols);
+            layers.back().set_weights(weights);
+        }
+        
+        file.close();
+    }
+
 private:
     void forward(const Matrix& input) {
         layers[0].forward(input);
