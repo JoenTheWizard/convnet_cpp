@@ -26,6 +26,13 @@ public:
         return weights;
     }
 
+    void set_weights(const Matrix& new_weights) {
+        if (new_weights.get_rows() != weights.get_rows() || new_weights.get_columns() != weights.get_columns()) {
+            throw std::invalid_argument("[-] ERROR: New weights dimensions do not match existing weights.");
+        }
+        weights = new_weights;
+    }
+
     void forward(const Matrix& input) {
         inputs = input;
         Matrix net_input = inputs * weights;
