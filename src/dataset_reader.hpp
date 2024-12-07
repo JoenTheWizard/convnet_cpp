@@ -167,7 +167,7 @@ public:
 
     //Split data to train-test (default 80-20)
     //Default seed parameter is set randomly but can be set manually
-    SplitData train_test_split(double test_size = 0.2, unsigned seed = std::random_device{}()) {
+    [[nodiscard]] SplitData train_test_split(double test_size = 0.2, unsigned seed = std::random_device{}()) {
         int total_samples = features.get_rows();
         int test_samples  = static_cast<int>(total_samples * test_size);
         int train_samples = total_samples - test_samples;
@@ -247,9 +247,9 @@ public:
     }
 
     //Get methods
-    const Matrix& get_features() const { return features; }
-    const Matrix& get_labels()   const { return labels; }  
-    const std::vector<std::string>& get_header() const { return header; }
+    [[nodiscard]] const Matrix& get_features() const { return features; }
+    [[nodiscard]] const Matrix& get_labels()   const { return labels; }  
+    [[nodiscard]] const std::vector<std::string>& get_header() const { return header; }
 };
 
 #endif
