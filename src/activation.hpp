@@ -13,6 +13,8 @@ struct ActivationFunction {
 
 class Activation {
 public:
+    std::unordered_map<std::string, ActivationFunction> functions;
+    
     Activation() {
         //Map the activation functions
         funtions["sigmoid"] = {sigmoid, sigmoid_derivative};    
@@ -20,7 +22,6 @@ public:
         funtions["tanh"]    = {tanh, tanh_derivative};    
     }
 private:
-    std::unordered_map<std::string, ActivationFunction> functions;
 
     //Sigmoid activation function
     static void sigmoid(Matrix& mat) {
