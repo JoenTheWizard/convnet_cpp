@@ -7,9 +7,9 @@
 #include <unordered_map>
 
 struct ActivationFunction {
-    std::functional<void(Matrix&)>          activate;   //Pointer to activation function
-    std::functional<void(Matrix&, Matrix&)> derivative; //Pointer to activation function's derivative function
-}
+    std::function<void(Matrix&)>          activate;   //Pointer to activation function
+    std::function<void(Matrix&, Matrix&)> derivative; //Pointer to activation function's derivative function
+};
 
 class Activation {
 public:
@@ -17,9 +17,9 @@ public:
     
     Activation() {
         //Map the activation functions
-        funtions["sigmoid"] = {sigmoid, sigmoid_derivative};    
-        funtions["relu"]    = {relu, relu_derivative};    
-        funtions["tanh"]    = {tanh, tanh_derivative};    
+        functions["sigmoid"] = {sigmoid, sigmoid_derivative};    
+        functions["relu"]    = {relu, relu_derivative};    
+        functions["tanh"]    = {tanh, tanh_derivative};    
     }
 private:
 
@@ -46,7 +46,7 @@ private:
     static void relu(Matrix& mat) {
         for (int i = 0; i < mat.get_rows(); i++) {
             for (int j = 0; j < mat.get_columns(); j++) {
-                mat(i, j) = std::max(0.0f, mat(i, j));
+                mat(i, j) = std::max(0.0, mat(i, j));
             }
         }
     }
@@ -78,6 +78,6 @@ private:
         }
     }
 
-}
+};
 
 #endif
