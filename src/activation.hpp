@@ -46,7 +46,7 @@ private:
     static void relu(Matrix& mat) {
         for (int i = 0; i < mat.get_rows(); i++) {
             for (int j = 0; j < mat.get_columns(); j++) {
-                mat(i, j) = std::max(0.0, mat(i, j));
+                mat(i, j) = (mat(i, j) > 0) ? mat(i, j) : 0;
             }
         }
     }

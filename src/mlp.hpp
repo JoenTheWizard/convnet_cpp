@@ -16,12 +16,23 @@ public:
         }
     }
 
+    MLP(const std::vector<int>& layer_sizes, const std::vector<std::string>& activation_funcs) {
+        if (layer_sizes.size() - 1 != activation_funcs.size()) {
+            throw std::invalid_argument("[-] ERROR: Number of activation functions must match number of layers - 1");
+        }
+        for (size_t i = 0; i < layer_sizes.size() - 1; ++i) {
+            layers.emplace_back(layer_sizes[i], layer_sizes[i + 1], activation_funcs[i]);
+        }
+    }
+
     void train(const Matrix& inputs, const Matrix& targets, double learning_rate, int epochs) {
         for (int e = 0; e < epochs; e++) {
             forward(inputs);
             backpropagate(targets, learning_rate);
         }
     }
+
+    MLP(const std::vector<Layer>& input_layers) : layers(input_layers) {}
 
     //Call this method with batched sized inputs
     void train(const Matrix& inputs, const Matrix& targets, double learning_rate, int epochs, int batch_size) {
