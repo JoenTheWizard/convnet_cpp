@@ -75,15 +75,6 @@ public:
             }
         }
     }
-
-private:
-    void sigmoid(Matrix& mat) {
-        for (int i = 0; i < mat.get_rows(); i++) {
-            for (int j = 0; j < mat.get_columns(); j++) {
-                mat(i, j) = 1.0 / (1.0 + exp(-mat(i, j)));
-            }
-        }
-    }
 };
 
 #endif
