@@ -140,7 +140,12 @@ private:
             }
             else { 
                 //Hidden layers
-                //Calculate error for hidden layers
+
+                //Calculate error for hidden layers.
+                //NOTE: hidden_error is calculated with 'layers[i + 1].get_weights()' which is 
+                //using the updated new weights from the previous layer's backward() pass rather 
+                //than the old weights. Might modify, but still functions.
+
                 Matrix hidden_error = error * layers[i + 1].get_weights().transpose();
                 layers[i].backward(hidden_error, learning_rate);
                 error = hidden_error;

@@ -57,7 +57,7 @@ public:
     }
 
     void backward(const Matrix& error, double learning_rate) {
-        //Sigmoid derivative
+        //Calculate derivative
         Matrix derivative(outputs.get_rows(), outputs.get_columns());
         activation_function.derivative(outputs, derivative);
 
