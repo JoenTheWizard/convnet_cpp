@@ -30,12 +30,11 @@ public:
                       << "' specified. Defaulting to sigmoid." << std::endl;
 
             this->activation_name = "sigmoid";
-            activation_function   = activation.functions["sigmoid"];
         }
         else {
             this->activation_name = activation_name;
-            activation_function   = activation.functions[activation_name];
         }
+        activation_function = activation.functions[this->activation_name];
     }
 
     const Matrix& get_outputs() const {
