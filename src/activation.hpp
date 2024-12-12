@@ -21,6 +21,20 @@ public:
         functions["relu"]    = {relu, relu_derivative};    
         functions["sigmoid"] = {sigmoid, sigmoid_derivative};    
     }
+
+    // User can add their own custom activation function
+    // Do note that when saving, loading or training the model, with added custom activation functions,
+    // to ensure that the same Activation object is used so indexing is preserved.
+    void add_function(const std::string& name, 
+                      std::function<void(Matrix&)> activate,
+                      std::function<void(Matrix&, Matrix&)> derivative) {
+        if (functions.find(name) != functions.end()) {
+            std::cerr << "[-] ERROR: Activation function '" << name << "' already exists." << std::endl;
+            return;
+        }
+        functions[name] = {activate, derivative};
+    }
+
 private:
 
     //Sigmoid activation function
