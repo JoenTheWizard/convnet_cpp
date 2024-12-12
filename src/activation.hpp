@@ -4,7 +4,7 @@
 #include "matrix.hpp"
 #include <cmath>
 #include <functional>
-#include <unordered_map>
+#include <map>
 
 struct ActivationFunction {
     std::function<void(Matrix&)>          activate;   //Pointer to activation function
@@ -13,7 +13,7 @@ struct ActivationFunction {
 
 class Activation {
 public:
-    std::unordered_map<std::string, ActivationFunction> functions;
+    std::map<std::string, ActivationFunction> functions;
     
     Activation() {
         //Map the activation functions
