@@ -14,6 +14,7 @@ private:
 
     //Activation function
     ActivationFunction activation_function;
+    std::string activation_name;
 
 public:
     Layer(int input_size, int output_size, const std::string& activation_name = "sigmoid") 
@@ -27,10 +28,13 @@ public:
         if (activation.functions.find(activation_name) == activation.functions.end()) {
             std::cerr << "[*] WARNING: Invalid activation function '" << activation_name 
                       << "' specified. Defaulting to sigmoid." << std::endl;
-            activation_function = activation.functions["sigmoid"];
+
+            this->activation_name = "sigmoid";
+            activation_function   = activation.functions["sigmoid"];
         }
         else {
-            activation_function = activation.functions[activation_name];
+            this->activation_name = activation_name;
+            activation_function   = activation.functions[activation_name];
         }
     }
 
@@ -40,6 +44,10 @@ public:
 
     const Matrix& get_weights() const {
         return weights;
+    }
+
+    const std::string& get_activation_function_name() const {
+        return activation_name;
     }
 
     void set_weights(const Matrix& new_weights) {

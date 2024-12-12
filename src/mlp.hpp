@@ -57,8 +57,18 @@ public:
         return layers.back().get_outputs();
     }
 
+    void print_weights(void) {
+        for (size_t i = 0; i < layers.size(); ++i) {
+            std::cout << "Layer " << i << " Activation: " << layers[i].get_activation_function_name() << std::endl;
+            layers[i].get_weights().print_matrix();
+            std::cout << "=============" << std::endl;
+        }
+    }
+
     //Might refactor for better performance maybe?
     void save_model_binary(const std::string& filename) const {
+        Activation activation;
+
         std::ofstream file(filename, std::ios::binary);
         if (!file.is_open()) {
             throw std::runtime_error("[-] ERROR: Unable to open file '"+ filename + "' to save model");
@@ -83,6 +93,16 @@ public:
                     file.write(reinterpret_cast<const char*>(&weight), sizeof(double));
                 }
             }
+
+            //Write the activation function index (uint8_t format)
+            //NOTE: Might modify it to compare with function pointer rather than string for better performance
+            const std::string& activation_func = layer.get_activation_function_name();
+            uint8_t func_index = 0;
+            for (const auto& f : activation.functions) {
+                if (f.first == activation_func) break;
+                ++func_index;
+            }
+            file.write(reinterpret_cast<const char*>(&func_index), sizeof(uint8_t));
         }
 
         file.close();
@@ -94,6 +114,8 @@ public:
         if (!file.is_open()) {
             throw std::runtime_error("[-] ERROR: Unable to open file '"+ filename + "' to load model");
         }
+
+        Activation activation;
 
         int num_layers;
         file.read(reinterpret_cast<char*>(&num_layers), sizeof(int));
@@ -113,7 +135,18 @@ public:
                 }
             }
             
-            layers.emplace_back(rows, cols);
+            uint8_t func_index, a = 0;
+            file.read(reinterpret_cast<char*>(&func_index), sizeof(uint8_t));
+            std::string activation_name = "sigmoid"; //Default to sigmoid
+            for (const auto& f : activation.functions) {
+                if (a == func_index) {
+                    activation_name = f.first;
+                    break;
+                }
+                ++a;
+            }
+
+            layers.emplace_back(rows, cols, activation_name);
             layers.back().set_weights(weights);
         }
         
