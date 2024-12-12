@@ -17,8 +17,6 @@ public:
     
     Activation() {
         //Map the activation functions
-        //NOTE: Currently using the unordered_map, which order is not guaranteed.
-        //Might change to a different data structure
         functions["tanh"]    = {tanh, tanh_derivative};    
         functions["relu"]    = {relu, relu_derivative};    
         functions["sigmoid"] = {sigmoid, sigmoid_derivative};    
