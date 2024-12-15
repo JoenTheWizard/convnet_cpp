@@ -24,8 +24,7 @@ public:
         weights.set_random_weights();
 
         //Initialize the activation function
-        Activation activation;
-        if (activation.functions.find(activation_name) == activation.functions.end()) {
+        if (!Activation::has_function(activation_name)) {
             std::cerr << "[*] WARNING: Invalid activation function '" << activation_name 
                       << "' specified. Defaulting to sigmoid." << std::endl;
 
@@ -34,7 +33,7 @@ public:
         else {
             this->activation_name = activation_name;
         }
-        activation_function = activation.functions[this->activation_name];
+        activation_function = Activation::get_function(this->activation_name);
     }
 
     const Matrix& get_outputs() const {
