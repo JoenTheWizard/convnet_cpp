@@ -16,6 +16,9 @@ private:
     Activation() = delete;
 
 public:
+    //User can add their own custom activation function
+    //Do note that when saving, loading or training the model, with added custom activation functions,
+    //to ensure that the same Activation object is used so indexing is preserved.
     static void add_function(const std::string& name, 
                              std::function<void(Matrix&)> activate,
                              std::function<void(Matrix&, Matrix&)> derivative) {
@@ -26,6 +29,7 @@ public:
         functions[name] = {activate, derivative};
     }
 
+    //Get the ActivationFunction from function name
     static const ActivationFunction& get_function(const std::string& name) {
         auto it = functions.find(name);
         if (it == functions.end()) {
@@ -34,6 +38,7 @@ public:
         return it->second;
     }
 
+    //Get the function name from specified numerical index from the functions hashmap
     static std::string get_function_name(uint8_t func_index) {
         uint8_t current_index = 0;
         for (const auto& pair : functions) {
@@ -43,6 +48,7 @@ public:
         return "sigmoid"; //Default to sigmoid if index is out of range
     }
 
+    //Get the index of the function name from the functions hashmap
     static uint8_t get_function_index(const std::string& activation_func) {
         uint8_t func_index = 0;
         for (const auto& pair : functions) {
@@ -52,11 +58,13 @@ public:
         throw std::runtime_error("[-] ERROR: Activation function not found: " + activation_func);
     }
 
+    //Check if activation function is available in the functions hashmap
     static bool has_function(const std::string& name) {
         return functions.find(name) != functions.end();
     }
 
 private:
+    //Sigmoid activation function
     static void sigmoid(Matrix& mat) {
         for (int i = 0; i < mat.get_rows(); i++) {
             for (int j = 0; j < mat.get_columns(); j++) {
@@ -65,6 +73,8 @@ private:
         }
     }
 
+    //Derivative of Sigmoid function 
+    //Might need to modify since 'Matrix& output' might be outputted from a different activation function.
     static void sigmoid_derivative(const Matrix& output, Matrix& derivative) {
         for (int i = 0; i < output.get_rows(); i++) {
             for (int j = 0; j < output.get_columns(); j++) {
@@ -73,6 +83,7 @@ private:
         }
     }
 
+    //ReLU activation function
     static void relu(Matrix& mat) {
         for (int i = 0; i < mat.get_rows(); i++) {
             for (int j = 0; j < mat.get_columns(); j++) {
@@ -81,6 +92,7 @@ private:
         }
     }
 
+    //Derivative of ReLU function
     static void relu_derivative(const Matrix& output, Matrix& derivative) {
         for (int i = 0; i < output.get_rows(); i++) {
             for (int j = 0; j < output.get_columns(); j++) {
@@ -89,6 +101,7 @@ private:
         }
     }
 
+    //Tanh activation function
     static void tanh(Matrix& mat) {
         for (int i = 0; i < mat.get_rows(); i++) {
             for (int j = 0; j < mat.get_columns(); j++) {
@@ -97,6 +110,7 @@ private:
         }
     }
 
+    //Derivative of Tanh function
     static void tanh_derivative(const Matrix& output, Matrix& derivative) {
         for (int i = 0; i < output.get_rows(); i++) {
             for (int j = 0; j < output.get_columns(); j++) {
