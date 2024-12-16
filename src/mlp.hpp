@@ -25,14 +25,18 @@ public:
         }
     }
 
+    MLP(const std::vector<Layer>& input_layers) : layers(input_layers) {}
+
+    MLP(const std::string& filename) {
+        load_model_binary(filename);
+    }
+
     void train(const Matrix& inputs, const Matrix& targets, double learning_rate, int epochs) {
         for (int e = 0; e < epochs; e++) {
             forward(inputs);
             backpropagate(targets, learning_rate);
         }
     }
-
-    MLP(const std::vector<Layer>& input_layers) : layers(input_layers) {}
 
     //Call this method with batched sized inputs
     void train(const Matrix& inputs, const Matrix& targets, double learning_rate, int epochs, int batch_size) {
