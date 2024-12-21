@@ -11,8 +11,8 @@ build/conv.exe
 
 ## To-do
 
+- [X] Support multiple different activation functions (from `Activation` class)
 - [ ] Add convolutional layers
-- [ ] Support multiple different activation functions (from `Activation` class)
 - [ ] Add post-training quantization methods (for later use to be used in FPGAs)
 - [ ] Add regularization techniques
     - [ ] Dropout
