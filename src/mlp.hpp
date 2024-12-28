@@ -5,6 +5,9 @@
 #include <vector>
 #include <cmath>
 
+//8-bit signed integer used for quantization (currently unused)
+using WeightType = int8_t;
+
 class MLP {
 private:
     std::vector<Layer> layers;
@@ -105,7 +108,7 @@ public:
 
         file.close();
     }
-    
+
     //Might refactor for better performance maybe?
     void load_model_binary(const std::string& filename) {
         std::ifstream file(filename, std::ios::binary);
@@ -139,6 +142,106 @@ public:
             layers.back().set_weights(weights);
         }
         
+        file.close();
+    }
+
+    /// ================ QUANTIZATION RELATED METHODS ================ ///
+
+    //Return number of bits of integers from largest weight
+    uint8_t find_largest_weight() const {
+        double max = 0;
+        for (const auto& layer : layers) {
+            const Matrix& weights = layer.get_weights();
+            for (int i = 0; i < weights.get_rows(); ++i) {
+                for (int j = 0; j < weights.get_columns(); ++j) {
+                    double w = std::abs(weights(i,j));
+                    if (w > max) max = w;
+                }
+            }
+        }
+
+        int integerPart = static_cast<int>(max);
+        return (integerPart == 0) ? 0 : static_cast<uint8_t>(std::log2(integerPart)) + 1;
+    }
+
+    int8_t quantize(double value, uint8_t max) const {
+        return static_cast<int8_t>(std::round(value * (1 << (7 - max))));
+    }
+
+    double dequantize(int8_t value, uint8_t max) const {
+        return static_cast<double>(value) / (1 << (7 - max));
+    }
+
+    //Save model via quantization
+    void save_model_binary_8bit(const std::string& filename) const {
+        std::ofstream file(filename, std::ios::binary);
+        if (!file.is_open()) {
+            throw std::runtime_error("[-] ERROR: Unable to open file '" + filename + "' to save model");
+        }
+
+        int num_layers = layers.size();
+        file.write(reinterpret_cast<const char*>(&num_layers), sizeof(int));
+
+        uint8_t max_weight = find_largest_weight();
+        file.write(reinterpret_cast<const char*>(&max_weight), sizeof(uint8_t));
+
+        for (const Layer& layer : layers) {
+            const Matrix& weights = layer.get_weights();
+            int rows = weights.get_rows(), cols = weights.get_columns();
+
+            file.write(reinterpret_cast<const char*>(&rows), sizeof(int));
+            file.write(reinterpret_cast<const char*>(&cols), sizeof(int));
+
+            //Write quantized weights
+            for (int i = 0; i < rows; ++i) {
+                for (int j = 0; j < cols; ++j) {
+                    int8_t quantized_weight = quantize(weights(i, j), max_weight);
+                    file.write(reinterpret_cast<const char*>(&quantized_weight), sizeof(int8_t));
+                }
+            }
+
+            uint8_t func_index = Activation::get_function_index(layer.get_activation_function_name());
+            file.write(reinterpret_cast<const char*>(&func_index), sizeof(uint8_t));
+        }
+
+        file.close();
+    }
+
+    void load_model_binary_8bit(const std::string& filename) {
+        std::ifstream file(filename, std::ios::binary);
+        if (!file.is_open()) {
+            throw std::runtime_error("[-] ERROR: Unable to open file '" + filename + "' to load model");
+        }
+
+        int num_layers;
+        file.read(reinterpret_cast<char*>(&num_layers), sizeof(int));
+
+        uint8_t max_weight;
+        file.read(reinterpret_cast<char*>(&max_weight), sizeof(uint8_t));
+
+        layers.clear();
+        for (int l = 0; l < num_layers; ++l) {
+            int rows, cols;
+            file.read(reinterpret_cast<char*>(&rows), sizeof(int));
+            file.read(reinterpret_cast<char*>(&cols), sizeof(int));
+
+            Matrix weights(rows, cols);
+            for (int i = 0; i < rows; ++i) {
+                for (int j = 0; j < cols; ++j) {
+                    int8_t quantized_weight;
+                    file.read(reinterpret_cast<char*>(&quantized_weight), sizeof(int8_t));
+                    weights(i, j) = static_cast<double>(quantized_weight); //dequantize(quantized_weight, max_weight);
+                }
+            }
+
+            uint8_t func_index;
+            file.read(reinterpret_cast<char*>(&func_index), sizeof(uint8_t));
+            std::string activation_name = Activation::get_function_name(func_index);
+
+            layers.emplace_back(rows, cols, activation_name);
+            layers.back().set_weights(weights);
+        }
+
         file.close();
     }
 
