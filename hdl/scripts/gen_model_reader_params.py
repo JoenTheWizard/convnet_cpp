@@ -20,22 +20,25 @@ def get_file_size(file_path):
         print(f"[-] ERROR: An error occurred: {e}")
         return None
 
-def generate_verilog_header(file_path, file_size):
+def generate_verilog_header(model_path, model_size):
     """
     Generate a Verilog header file with parameters based on the file size.
     
-    :param file_path: Path to the input file
-    :param file_size: Size of the file in bytes
+    :param model_path: Path to the input model file
+    :param model_size: Size of the model file in bytes
     """
     header_content = f"""`ifndef MODEL_PARAMS_H
 `define MODEL_PARAMS_H
 
-`define MODEL_SIZE {file_size}
-`define MODEL_PATH "{os.path.abspath(file_path)}"
+`define MODEL_SIZE {model_size}
+`define MODEL_PATH "{os.path.abspath(model_path)}"
 
 `endif // MODEL_PARAMS_H"""
     
-    header_file_path = "model_params.vh"
+    header_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "..", "build", "model_params.vh")
+    os.makedirs(os.path.dirname(header_file_path), exist_ok=True)
+
     with open(header_file_path, "w") as header_file:
         header_file.write(header_content)
     
@@ -43,7 +46,7 @@ def generate_verilog_header(file_path, file_size):
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("[*] Usage: python", sys.argv[0], "<file_path>")
+        print(f"[*] Usage: python {sys.argv[0]} <model_path>")
         sys.exit(1)
 
     file_path = sys.argv[1]
