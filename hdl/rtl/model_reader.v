@@ -1,8 +1,13 @@
+`include "build/model_params.vh"
+
 module model_reader #(
     parameter MAX_LAYERS   = 10,
     parameter MAX_NEURONS  = 1024,
     parameter WEIGHT_WIDTH = 8,
-    parameter ADDR_WIDTH   = 16
+    parameter ADDR_WIDTH   = 16,
+    //Parameters set during compile time
+    parameter MODEL_SIZE = `MODEL_SIZE,
+    parameter MODEL_PATH = `MODEL_PATH
 )(
     input wire clk,
     input wire rst_n,
@@ -11,19 +16,19 @@ module model_reader #(
 );
 
 integer file_handle, bytes_read, offset;
-reg [WEIGHT_WIDTH-1:0] data [0:1023];
+reg [WEIGHT_WIDTH-1:0] data [0:MODEL_SIZE-1];
 reg [31:0] num_layers, num_rows, num_cols;
 reg [7:0] max_weight, activation;
 
 //This module is just for reading the quantized model's binary file and printing it
-//NOTE: The this reads the models quantized to 8-bit precision
+//NOTE: This reads the models quantized to 8-bit precision
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         read_done <= 0;
     end
     else if (start_read) begin
-        file_handle = $fopen("../xor_q2.weights", "rb");
+        file_handle = $fopen(MODEL_PATH, "rb");
         if (file_handle == 0) begin
             $display("[-] ERROR: Failed to open file");
         end
