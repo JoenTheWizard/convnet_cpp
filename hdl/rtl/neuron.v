@@ -1,35 +1,67 @@
-module neuron(
+module neuron #(
+    parameter SIZE  = 2,  //Number of elements in each array
+    parameter WIDTH = 8   //Bit width of each element
+)(
     input wire clk,
     input wire reset,
+    input wire start,
 
-    input [7:0] i1, i2,
-    input [7:0] w1, w2,
+    //Input and weight data passed to the neuron
+    input wire signed [WIDTH*SIZE-1:0] weights,
+    input wire signed [WIDTH*SIZE-1:0] inputs,
 
-    output reg [16:0] result
+    output reg signed [2*WIDTH:0] result,
+    output reg valid,
+    output reg done
 );
 
-//Right now this is a test with a basic neuron functionality for a 2x2 input-weight
+reg [1:0] state;
+reg [$clog2(SIZE):0] counter;
+reg signed [2*WIDTH:0] accumulator;
 
-reg [15:0] product1, product2;
-reg [16:0] sum;
+localparam IDLE = 2'b00, MULTIPLY = 2'b01, FINISH = 2'b10;
+
+//This module is for a singular sequential neuron cell that multiplies SIZE x SIZE set and appends the result through the accumulator
 
 always @(posedge clk or posedge reset) begin
     if (reset) begin
-        product1 <= 0;
-        product2 <= 0;
-        sum      <= 0;
-        result   <= 0;
-    end 
-    else begin
-        //Multiply inputs with weights
-        product1 <= $signed(i1) * $signed(w1);
-        product2 <= $signed(i2) * $signed(w2);
+        state       <= IDLE;
+        counter     <= 0;
+        result      <= 0;
+        accumulator <= 0;
+        valid       <= 0;
+        done        <= 0;
+    end else begin
+        case (state)
+            IDLE: begin
+                if (start) begin
+                    state       <= MULTIPLY;
+                    counter     <= 0;
+                    accumulator <= 0;
+                    done        <= 0;
+                end
+            end
 
-        //Sum the products
-        sum <= $signed(product1) + $signed(product2);
+            MULTIPLY: begin
+                accumulator <= accumulator + 
+                                ($signed(weights[WIDTH*(counter+1)-1 -: WIDTH]) * 
+                                $signed(inputs[WIDTH*(counter+1)-1 -: WIDTH]));
+                counter <= counter + 1;
 
-        //Assign sum to result
-        result <= sum;
+                if (counter == SIZE - 1) begin
+                    state <= FINISH;
+                end
+            end
+
+            FINISH: begin
+                result <= accumulator;
+                valid  <= 1;
+                done   <= 1;
+                state  <= IDLE;
+            end
+
+            default: state <= IDLE;
+        endcase
     end
 end
 

@@ -1,60 +1,91 @@
 module neuron_tb();
 
-    //Inputs
+    //Set parameters
+    parameter WIDTH = 8;
+    parameter SIZE  = 2;
+
+    //Set signals
     reg clk;
     reg reset;
-    reg [7:0] i1, i2;
-    reg [7:0] w1, w2;
-
-    //Outputs
-    wire [16:0] result;
+    reg start;
+    reg signed [WIDTH*SIZE-1:0] weights;
+    reg signed [WIDTH*SIZE-1:0] inputs;
+    wire signed [2*WIDTH:0] result;
+    wire valid;
+    wire done;
 
     //Neuron module
-    neuron uut(
+    neuron #(.SIZE(SIZE), .WIDTH(WIDTH)) uut (
         .clk(clk),
         .reset(reset),
-        .i1(i1),
-        .i2(i2),
-        .w1(w1),
-        .w2(w2),
-        .result(result)
+        .start(start),
+        .weights(weights),
+        .inputs(inputs),
+        .result(result),
+        .valid(valid),
+        .done(done)
     );
 
-    //Clock generation
+    //Clock
+    always #5 clk = ~clk;
+
+    integer test_case;
+
     initial begin
-        clk = 0;
-        forever #5 clk = ~clk;
+        $dumpfile("neuron_tb.vcd");
+        $dumpvars(0, neuron_tb);
+        
+        //Init inputs
+        clk       = 0;
+        reset     = 1;
+        start     = 0;
+        test_case = 0;
+
+        test_case = 1;
+        run_test(4'd4, 4'd3, 4'd2, 4'd2);
+
+        test_case = 2;
+        run_test(-4'd2, -4'd1, 4'd3, 4'd4);
+
+        test_case = 3;
+        run_test(4'd2, 4'd3, -4'd1, -4'd2);
+
+        test_case = 4;
+        run_test(-4'd3, 4'd2, 4'd2, -4'd1);
+
+        test_case = 5;
+        run_test(4'd0, 4'd5, 4'd3, 4'd2);
+
+        $display("All tests completed");
+        $finish;
     end
 
-    //Test stimulus
-    initial begin
-        //Initialize inputs
-        reset = 1;
-        i1 = 0; i2 = 0;
-        w1 = 0; w2 = 0;
+    //Run test cases
+    task run_test;
+        input signed [WIDTH-1:0] w1, w0, i1, i0;
+        begin
+            $display("Running Test Case %0d", test_case);
+            weights = {w1, w0};
+            inputs  = {i1, i0};
 
-        //Wait for global reset
-        #100;
-        reset = 0;
+            //NOTE: Reset here might be unnecessary in the test cases
+            reset = 1;
+            #10 reset = 0;
+            #10 start = 1;
+            #10 start = 0;
 
-        //Test case 1: Positive inputs and weights
-        #10 i1 = 8'd5; i2 = 8'd3; w1 = 8'd2; w2 = 8'd4;
-        #30 $display("Test Case 1: i1=%d, i2=%d, w1=%d, w2=%d, result=%d", $signed(i1), $signed(i2), $signed(w1), $signed(w2), $signed(result));
-        
-        //Test case 2: Negative inputs, positive weights
-        #20 i1 = -8'd2; i2 = -8'd3; w1 = 8'd3; w2 = 8'd2;
-        #30 $display("Test Case 2: i1=%d, i2=%d, w1=%d, w2=%d, result=%d", $signed(i1), $signed(i2), $signed(w1), $signed(w2), $signed(result));
-        
-        //Test case 3: Positive inputs, negative weights
-        #20 i1 = 8'd4; i2 = 8'd6; w1 = -8'd2; w2 = -8'd3;
-        #30 $display("Test Case 3: i1=%d, i2=%d, w1=%d, w2=%d, result=%d", $signed(i1), $signed(i2), $signed(w1), $signed(w2), $signed(result));
-        
-        //Test case 4: All negative
-        #20 i1 = -8'd3; i2 = -8'd2; w1 = -8'd4; w2 = -8'd5;
-        #30 $display("Test Case 4: i1=%d, i2=%d, w1=%d, w2=%d, result=%d", $signed(i1), $signed(i2), $signed(w1), $signed(w2), $signed(result));
+            wait(done);
 
-        //Finish simulation
-        #20 $finish;
+            //Wait a couple cycles
+            #15;
+        end
+    endtask
+
+    //Display results
+    always @(posedge clk) begin
+        if (done && valid) begin
+            $display("Test Case %0d - Time %0t: Result = %0d", test_case, $time, $signed(result));
+        end
     end
 
 endmodule
