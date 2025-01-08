@@ -32,7 +32,7 @@ module neuron_tb();
     integer test_case;
 
     initial begin
-        $dumpfile("neuron_tb.vcd");
+        $dumpfile("build/neuron_tb.vcd");
         $dumpvars(0, neuron_tb);
         
         //Init inputs
