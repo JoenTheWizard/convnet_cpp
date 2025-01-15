@@ -7,15 +7,17 @@ SIM = iverilog
 SIMFLAGS = -Wall
 
 #Source file(s)
-SRCS_NEURON     = rtl/neuron.v test/neuron_tb.v
-SRCS_MODEL_READ = rtl/model_reader.v test/model_reader_tb.v
+SRCS_NEURON         = rtl/neuron.v test/neuron_tb.v
+SRCS_MODEL_READ     = rtl/model_reader.v test/model_reader_tb.v
+SRCS_ACTIVATION_LUT = rtl/activation_lut.v test/activation_lut_tb.v
 
 #Output build folder
 BUILD = build
 
 #Output file(s)
-NEURON_OUTPUT     = $(BUILD)/neuron_sim
-MODEL_READ_OUTPUT = $(BUILD)/model_reader_sim
+NEURON_OUTPUT         = $(BUILD)/neuron_sim
+MODEL_READ_OUTPUT     = $(BUILD)/model_reader_sim
+ACTIVATION_LUT_OUTPUT = $(BUILD)/activation_lut
 
 #Model file to use for the HDL simulation
 #Will be used to produce the 'model_params.vh' header file during compilation
@@ -42,8 +44,13 @@ neuron_simulate: $(BUILD) $(HEADER_FILE) $(SRCS_NEURON)
 	$(SIM) $(SIMFLAGS) -o $(NEURON_OUTPUT) $(SRCS_NEURON)
 	./$(NEURON_OUTPUT)
 
+#Compile and simulate activation function lookup-table
+activation_lut: $(BUILD) $(HEADER_FILE) $(SRCS_ACTIVATION_LUT)
+	$(SIM) $(SIMFLAGS) -o $(ACTIVATION_LUT_OUTPUT) $(SRCS_ACTIVATION_LUT)
+	./$(ACTIVATION_LUT_OUTPUT)
+
 #Clean up
 clean:
 	rm -rf $(BUILD)
 
-.PHONY: all model_read_simulate neuron_simulate clean
+.PHONY: all model_read_simulate activation_lut neuron_simulate clean
