@@ -1,7 +1,7 @@
 module activation_lut_tb;
 
     //Parameters
-    parameter LUT_FILE   = "sigmoid_lut.mem";
+    parameter LUT_FILE   = "build/sigmoid_lut.mem";
     parameter ADDR_WIDTH = 8;
     parameter DATA_WIDTH = 8;
 

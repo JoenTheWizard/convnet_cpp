@@ -1,34 +1,35 @@
 import numpy as np
 import argparse
 
-### Generate look-up table for activation function. Only has sigmoid so far ###
+#Generates the sigmoid LUT values with each line representing their respective signed-value address
+#This can be improved but will suffice for now
 
 def sigmoid(x):
     """Calculate the sigmoid function."""
     return 1 / (1 + np.exp(-x))
 
+#Will generate for 8-bit signed values
 def generate_lut(num_entries, min_input, max_input, output_file):
     """
-    Generate a lookup table for the sigmoid function.
+    Generate a lookup table for the sigmoid function (8-bit signed values).
 
     :param num_entries: The number of entries within the Look-up table
     :param min_input: Minimum input value for the LUT
     :param max_input: Maximum input value for the LUT
     :param output_file: Output file name
     """
-    #Create an array of input values ranging from min_input to max_input and calculate the sigmoid values
-    inputs = np.linspace(min_input, max_input, num_entries)
-    lut_values = sigmoid(inputs)
-    
-    #Scale to 8-bit signed integer range [-128, 127]
-    lut_scaled = np.round(lut_values * 127).astype(np.int8)
-    
-    #Write LUT to the output file
+    entry_halves = num_entries // 2
+
+    first_inputs  = np.round(sigmoid(np.linspace(0, max_input, entry_halves)) * 127).astype(np.int8)
+    second_inputs = np.round(sigmoid(np.linspace(min_input, 0, entry_halves)) * 127).astype(np.int8)
+
+    final = np.concatenate((first_inputs, second_inputs))
+    print(final)
+
     with open(output_file, 'w') as f:
-        for value in lut_scaled:
-            #Write each value in two's complement hex format
-            #Make sure to mask to get the lower 8 bits
-            f.write(f"{value & 0xFF:02X}\n")
+        for val in final:
+            #print(val, f"{int(val):02X}")
+            f.write(f"{int(val):02X}\n")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate a LUT for the sigmoid activation function.")
@@ -40,4 +41,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     generate_lut(args.num_entries, args.min_input, args.max_input, args.output_file)
-    print(f"LUT generated and saved to {args.output_file}")
+    print(f"[+] LUT generated and saved to {args.output_file}")

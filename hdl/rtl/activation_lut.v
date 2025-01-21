@@ -1,6 +1,6 @@
 module activation_lut #(
     //Default will be set to 8-bit sigmoid output generated from gen_activation_lut.py
-    parameter LUT_FILE   = "sigmoid_lut.mem", 
+    parameter LUT_FILE   = "build/sigmoid_lut.mem", 
     parameter ADDR_WIDTH = 8,
     parameter DATA_WIDTH = 8
 )(

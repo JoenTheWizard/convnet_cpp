@@ -24,6 +24,9 @@ ACTIVATION_LUT_OUTPUT = $(BUILD)/activation_lut
 HEADER_FILE = $(BUILD)/model_params.vh
 MODEL_FILE  = ../models/xor_quantized.weights
 
+#Arguments passed for the activation function LUT
+LUT_ARGS = --output_file $(BUILD)/sigmoid_lut.mem 
+
 all: model_read_simulate
 
 #Create build directory
@@ -31,8 +34,10 @@ $(BUILD):
 	mkdir -p $(BUILD)
 
 #Create the model_params.vh header file to help set parameters during compile time
+#As well, generateb the activation function LUT table
 $(HEADER_FILE): $(BUILD) $(MODEL_FILE)
 	python scripts/gen_model_reader_params.py $(MODEL_FILE)
+	python scripts/gen_activation_lut.py $(LUT_ARGS)
 
 #Compile and simulate model reader
 model_read_simulate: $(BUILD) $(HEADER_FILE) $(SRCS_MODEL_READ)
@@ -44,7 +49,7 @@ neuron_simulate: $(BUILD) $(HEADER_FILE) $(SRCS_NEURON)
 	$(SIM) $(SIMFLAGS) -o $(NEURON_OUTPUT) $(SRCS_NEURON)
 	./$(NEURON_OUTPUT)
 
-#Compile and simulate activation function lookup-table
+#Compile and simulate activation function lookup-table module
 activation_lut: $(BUILD) $(HEADER_FILE) $(SRCS_ACTIVATION_LUT)
 	$(SIM) $(SIMFLAGS) -o $(ACTIVATION_LUT_OUTPUT) $(SRCS_ACTIVATION_LUT)
 	./$(ACTIVATION_LUT_OUTPUT)
