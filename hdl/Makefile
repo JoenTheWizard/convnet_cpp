@@ -7,7 +7,7 @@ SIM = iverilog
 SIMFLAGS = -Wall
 
 #Source file(s)
-SRCS_NEURON         = rtl/neuron.v test/neuron_tb.v
+SRCS_NEURON         = rtl/neuron.v rtl/activation_lut.v test/neuron_tb.v
 SRCS_MODEL_READ     = rtl/model_reader.v test/model_reader_tb.v
 SRCS_ACTIVATION_LUT = rtl/activation_lut.v test/activation_lut_tb.v
 
